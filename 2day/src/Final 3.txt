@@ -1,0 +1,62 @@
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Scanner;
+
+import org.apache.jena.ontology.Individual;
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.ontology.SymmetricProperty;
+import org.apache.jena.ontology.TransitiveProperty;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.util.FileManager;
+
+
+public class Management {	
+	static final String inputFileName = "http://selab.cbnu.ac.kr/word.owl";
+	
+	
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		//@SuppressWarnings("resource")
+		Scanner keyboard = new Scanner(System.in);
+		System.out.print("Please input some instance here: ");
+		String key = keyboard.nextLine();
+		key=key.replaceAll(" ", "_").toString();
+		for(String e : SynonymPrint(key)){
+			e=e.replaceAll("_"," ").toString();
+			System.out.println(e);
+		}
+    }
+	
+	public static ArrayList<String> SynonymPrint(String input){	
+		
+		ArrayList<String> synonyms = new ArrayList<String>();
+		OntModel model =ModelFactory.createOntologyModel(OntModelSpec.OWL_DL_MEM_RULE_INF);        
+		InputStream in = FileManager.get().open(inputFileName);
+        model.read(in, "");        
+        
+        String ns= inputFileName + "Word";
+        SymmetricProperty isSynonymOf = model.getSymmetricProperty("http://www.semanticweb.org/nazakatali/ontologies/Word#isSynonymOf"); 
+   
+        Iterator<Individual> iterInd = model.listIndividuals();
+        while (iterInd.hasNext()) {
+            Individual ind = iterInd.next();
+            if (ind.getLocalName().equalsIgnoreCase(input)) {
+                //System.out.println("Synonyms of " + ind.getLocalName() + " are:");
+                NodeIterator iterVal = ind.listPropertyValues(isSynonymOf);
+                while (iterVal.hasNext()) {
+                   // System.out.println(" * " + ((Resource) iterVal.next()).getLocalName());
+                	synonyms.add(iterVal.nextNode().asResource().getLocalName().toString());
+                	
+                }
+               
+            }
+           
+        }
+        return synonyms;
+	}
+	 
+}
